@@ -9,6 +9,7 @@ from dateutil.parser import parse
 import boto3
 from botocore.awsrequest import AWSRequest
 from botocore.auth import SigV4Auth
+from botocore.credentials import Credentials
 from urllib.parse import urlparse, parse_qs
 
 from .constants import APP_KEY, HOST, USER_AGENT, BASE_URI
@@ -66,13 +67,8 @@ class Auth:
         if soon_expires:
             creds = self._set_creds(await _get_credentials())
 
-        # Build AWS credentials object
-        session = boto3.session.Session()
-        credentials = session.get_credentials()
-
-        # Overwrite session credentials with fetched temporary ones
-        frozen_creds = credentials.get_frozen_credentials()
-        frozen_creds = frozen_creds._replace(
+        # Build credentials object directly
+        credentials = Credentials(
             access_key=creds['accessKeyId'],
             secret_key=creds['secretAccessKey'],
             token=creds['sessionToken']
@@ -93,6 +89,6 @@ class Auth:
         )
 
         # Sign the request with SigV4
-        SigV4Auth(frozen_creds, "execute-api", "us-east-1").add_auth(request)
+        SigV4Auth(credentials, "execute-api", "us-east-1").add_auth(request)
 
         return dict(request.headers)
