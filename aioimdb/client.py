@@ -115,7 +115,7 @@ class Imdb(Auth):
         item = re.sub(r'\W+', '_', item).strip('_')
         query = quote(item)
         first_alphanum_char = self._query_first_alpha_num(item)
-        url = f'{SEARCH_BASE_URI}/suggests/{first_alphanum_char}/{query}.json'
+        url = f'{SEARCH_BASE_URI}/suggestion/x/{query}.json'
 
         results = await self._get(url=url, query=query)
         return [{name: res.get(key, None)
